@@ -7,6 +7,8 @@ import { NEW_TODO_ID } from './constats';
 
 export const App = () => {
 	const [todos, setTodos] = useState([]);
+	const [searchingPhrase, setSerchingPhrase] = useState('');
+	const [isAbcSorting, setIsAbcSorting] = useState(false);
 
 	const onTodoAdd = () => {
 		setTodos(addTodoInTodos(todos));
@@ -50,12 +52,18 @@ export const App = () => {
 	};
 
 	useEffect(() => {
-		readTodos().then((loadedTodos) => setTodos(loadedTodos.reverse()));
-	}, []);
+		readTodos(searchingPhrase, isAbcSorting).then((loadedTodos) =>
+			setTodos(loadedTodos),
+		);
+	}, [searchingPhrase, isAbcSorting]);
 
 	return (
 		<div className={styles.app}>
-			<TodosController onTodoAdd={onTodoAdd} />
+			<TodosController
+				onTodoAdd={onTodoAdd}
+				onSearch={setSerchingPhrase}
+				onSorting={setIsAbcSorting}
+			/>
 			<div>
 				{todos.map(({ id, title, completed, isEditing = false }) => (
 					<Todo

@@ -1,34 +1,12 @@
-import { useState } from 'react';
 import { Button } from '../button/button';
+import { Search, Sorting } from './components';
 import styles from './todos-controller.module.css';
 
-export const TodosController = ({ onTodoAdd }) => {
-	const [searchText, setSearchText] = useState('');
-	const [isSortingEnabled, setIsSortingEnabled] = useState(false);
-
-	const onSearchTextChange = ({ target }) => {
-		setSearchText(target.checked);
-	};
-
-	const onSortingChange = ({ target }) => {
-		setIsSortingEnabled(target.value);
-	};
-
+export const TodosController = ({ onTodoAdd, onSearch, onSorting }) => {
 	return (
 		<div className={styles.todosController}>
-			<input
-				className={styles.search}
-				type="text"
-				value={searchText}
-				placeholder="Поиск задачи..."
-				onChange={onSearchTextChange}
-			/>
-			<input
-				className={styles.sorting}
-				type="checkbox"
-				checked={isSortingEnabled}
-				onChange={onSortingChange}
-			/>
+			<Search onSearch={onSearch} />
+			<Sorting onSorting={onSorting} />
 			<Button onClick={onTodoAdd}>⨣</Button>
 		</div>
 	);
