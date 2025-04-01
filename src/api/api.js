@@ -1,36 +1,33 @@
-import { HTTP_METHOD } from '../constats';
+import { get, orderByChild, query, ref, push, set, remove } from 'firebase/database';
+import { db } from '../firebase';
 
-const fetchServer = (method, { id, ...payload } = {}) => {
-	let url = 'http://localhost:3003/todos';
-	let options = {
-		method,
-		headers: { 'Content-Type': 'application/json' },
-	};
+export const createTodo = (newTodo) =>
+	push(ref(db, 'todos'), newTodo).then(({ key }) => key);
 
-	if (method === HTTP_METHOD.GET) {
-		const { searchingPhrase, isAbcSorting } = payload;
-		const sortingParams = isAbcSorting
-			? '_sort=title&_order=asc'
-			: '_sort=id&_order=desc';
-		url += `?${sortingParams}&title_like=${searchingPhrase}`;
-	} else {
-		if (method !== HTTP_METHOD.POST) {
-			url += `/${id}`;
+export const readTodos = (searchingPhrase = '', isAbcSorting = false) => {
+	const todosDbref = ref(db, 'todos');
+	const sortingField = isAbcSorting ? 'title' : 'id';
+
+	return get(query(todosDbref, orderByChild(sortingField))).then((snapshot) => {
+		let loadedTodos = [];
+
+		snapshot.forEach((todoSnapshot) => {
+			const id = todoSnapshot.key;
+			const { title, completed } = todoSnapshot.val();
+			loadedTodos.push({ id, title, completed });
+		});
+
+		if (searchingPhrase !== '') {
+			loadedTodos = loadedTodos.filter(
+				({ title }) =>
+					title.toLowerCase().indexOf(searchingPhrase.toLowerCase()) >= 0,
+			);
 		}
 
-		if (method !== HTTP_METHOD.DELETE) {
-			options.body = JSON.stringify(payload);
-		}
-	}
-
-	return fetch(url, options).then((jsonData) => jsonData.json());
+		return isAbcSorting ? loadedTodos : loadedTodos.reverse();
+	});
 };
 
-export const createTodo = (newTodo) => fetchServer('POST', newTodo);
+export const updateTodo = (todoData) => set(ref(db, `todos/${todoData.id}`), todoData);
 
-export const readTodos = (searchingPhrase = '', isAbcSorting = false) =>
-	fetchServer('GET', { searchingPhrase, isAbcSorting });
-
-export const updateTodo = (todoData) => fetchServer('PATCH', todoData);
-
-export const deleteTodo = (todoId) => fetchServer('DELETE', { id: todoId });
+export const deleteTodo = (todoId) => remove(ref(db, `todos/${todoId}`));

@@ -18,17 +18,17 @@ export const App = () => {
 		const { title, completed } = todoFinde(todos, todoId) || {};
 
 		if (todoId === NEW_TODO_ID) {
-			createTodo({ title, completed }).then((todo) => {
+			createTodo({ title, completed }).then((id) => {
 				let updatedTodos = setTodoInTodos(todos, {
 					id: NEW_TODO_ID,
 					isEditing: false,
 				});
 				updatedTodos = removeTodoInTodos(updatedTodos, NEW_TODO_ID);
-				updatedTodos = addTodoInTodos(updatedTodos, todo);
+				updatedTodos = addTodoInTodos(updatedTodos, { id, title, completed });
 				setTodos(updatedTodos);
 			});
 		} else {
-			updateTodo({ id: todoId, title }).then(() => {
+			updateTodo({ id: todoId, title, completed }).then(() => {
 				setTodos(setTodoInTodos(todos, { id: todoId, isEditing: false }));
 			});
 		}
@@ -42,7 +42,9 @@ export const App = () => {
 		setTodos(setTodoInTodos(todos, { id, title: newTitle }));
 	};
 	const onTodoComletedChange = (id, newCompleted) => {
-		updateTodo({ id, completed: newCompleted }).then(() => {
+		const { title } = todoFinde(todos, id) || {};
+
+		updateTodo({ id, title, completed: newCompleted }).then(() => {
 			setTodos(setTodoInTodos(todos, { id, completed: newCompleted }));
 		});
 	};
